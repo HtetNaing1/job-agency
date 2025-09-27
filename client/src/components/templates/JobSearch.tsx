@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input, Checkbox, Select, Pagination, Divider } from "antd";
 import { Briefcase, MapPin, DollarSign, Clock, Building2 } from "lucide-react";
 import Button from "@/components/atoms/Button";
+import { useRouter } from "next/navigation";
 
 type Job = {
   id: string;
@@ -59,6 +60,11 @@ const JOBS: Job[] = [
 export default function JobSearch() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("newest");
+  const router = useRouter();
+
+  const handleApply = (id: string) => {
+    router.push(`/jobs/${id}/apply`)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -217,6 +223,7 @@ export default function JobSearch() {
                 label="Apply Now"
                 type="primary"
                 className="ml-6 shrink-0 h-10"
+                onClick={() => handleApply("1")}
               />
             </div>
           ))}
