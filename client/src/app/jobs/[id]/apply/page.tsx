@@ -1,4 +1,4 @@
-import ApplyJob from "@/components/templates/ApplyJob";
+import ApplyJob from "@/components/templates/ApplyJobTemplate";
 
 const Jobsearch = () => {
   return (

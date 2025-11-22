@@ -1,10 +1,10 @@
-import JobSearch from "@/components/templates/JobSearch";
-import { Header } from "@/components/organisms/Header";
+import Navbar from "@/components/organisms/Navbar";
+import JobSearch from "@/components/templates/JobsTemplate";
 
 const Jobsearch = () => {
   return (
     <div>
-      <Header />
+      <Navbar/>
       <JobSearch />
     </div>
   );
