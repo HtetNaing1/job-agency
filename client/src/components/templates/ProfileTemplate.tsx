@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Tabs } from "antd";
 import ProfileHeader from "@/components/molecules/ProfileHeader";
-import ProfileOverview from "@/components/organisms/ProfileOverview";
-import DocumentsSection from "@/components/organisms/DocumentsSection"; // your existing organism
+import ProfileOverview from "@/components/organisms/profile/ProfileOverview";
+import DocumentsSection from "@/components/organisms/profile/DocumentsSection";
 
 type Activity = { title: string; when: string };
 type Profile = {

@@ -4,10 +4,10 @@ import { useMemo, useState } from "react";
 import { Typography, Row, Col, Button, List, Modal, message } from "antd";
 import { Plus, Briefcase, Users, Eye } from "lucide-react";
 import StatCard from "@/components/atoms/StatCard";
-import JobListItem from "@/components/organisms/JobListItem";
+import JobListItem from "@/components/organisms/employer-dashboard/JobListItem";
 import FilterBar, { type FilterSelect } from "@/components/molecules/FilterBar";
-import JobInfoHeader from "@/components/organisms/JobInfoHeader";
-import ApplicationsTable from "@/components/organisms/ApplicationsTable";
+import JobInfoHeader from "@/components/organisms/employer-dashboard/JobInfoHeader";
+import ApplicationsTable from "@/components/organisms/employer-dashboard/ApplicationsTable";
 import { JobPosting, Application, JobStatus } from "@/constant/type";
 
 const { Title, Text } = Typography;

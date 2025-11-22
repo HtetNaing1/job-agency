@@ -1,7 +1,7 @@
-import Button from "../atoms/Button";
+import Button from "@/components/atoms/Button";
 import { Input } from "antd";
 import { Search, MapPin, Briefcase, Users } from "lucide-react";
-import { ImageWithFallback } from "../atoms/imageWithFallback";
+import { ImageWithFallback } from "@/components/atoms/imageWithFallback";
 
 export function Hero() {
   return (

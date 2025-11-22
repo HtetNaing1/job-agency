@@ -1,5 +1,5 @@
 "use client";
-import RegisterForm from "../molecules/RegisterForm";
+import RegisterForm from "@/components/molecules/RegisterForm";
 
 export default function RegisterCard({
   formData,

@@ -2,10 +2,10 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 
-const FilterSidebar = dynamic(() => import("../organisms/FilterSidebar"), {
+const FilterSidebar = dynamic(() => import("../organisms/jobs/FilterSidebar"), {
   ssr: false,
 });
-const JobList = dynamic(() => import("../organisms/JobList"), { ssr: false });
+const JobList = dynamic(() => import("../organisms/jobs/JobList"), { ssr: false });
 
 const JOBS = [
   {

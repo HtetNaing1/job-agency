@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, List, Typography } from "antd";
-import { JobApplication } from "../templates/JobDashboardTemplate";
+import { JobApplication } from "@/components/templates/JobDashboardTemplate";
 import ApplicationItem from "@/components/molecules/ApplicationItem";
 
 const { Text } = Typography;

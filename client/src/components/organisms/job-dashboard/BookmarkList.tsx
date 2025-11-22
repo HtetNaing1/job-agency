@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, List } from "antd";
-import { BookmarkedJob } from "../templates/JobDashboardTemplate";
+import { BookmarkedJob } from "@/components/templates/JobDashboardTemplate";
 import BookmarkItem from "@/components/molecules/BookmarkItem";
 
 export default function BookmarksList({ bookmarks }: { bookmarks: BookmarkedJob[] }) {

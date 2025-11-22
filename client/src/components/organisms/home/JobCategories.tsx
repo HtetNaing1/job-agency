@@ -1,5 +1,5 @@
 import { Card } from "antd";
-import Button from "../atoms/Button";
+import Button from "@/components/atoms/Button";
 import { Code, Palette, TrendingUp, Stethoscope, Wrench, GraduationCap, ChefHat, Building } from "lucide-react";
 
 const categories = [

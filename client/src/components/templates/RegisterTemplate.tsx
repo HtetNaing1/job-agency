@@ -10,7 +10,7 @@ import { register } from "@/lib/auth";
 const AuthHeader = dynamic(() => import("../molecules/AuthHeader"), {
   loading: () => <div className="h-8 bg-gray-200 rounded-md w-1/3 mx-auto mb-4 animate-pulse" />,
 });
-const RegisterCard = dynamic(() => import("../organisms/RegisterCard"), {
+const RegisterCard = dynamic(() => import("../organisms/auth/RegisterCard"), {
   loading: () => (
     <div className="bg-white rounded-2xl shadow-lg p-8 animate-pulse min-h-[500px]" />
   ),

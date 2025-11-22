@@ -1,6 +1,6 @@
 "use client";
-import Button from "../atoms/Button";
-import JobMeta from "../molecules/JobMeta";
+import Button from "@/components/atoms/Button";
+import JobMeta from "@/components/molecules/JobMeta";
 import { useRouter } from "next/navigation";
 
 interface JobCardProps {

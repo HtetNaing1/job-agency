@@ -6,9 +6,9 @@ import Button from "@/components/atoms/Button";
 import { Search } from "lucide-react";
 
 import FilterBar from "@/components/molecules/FilterBar";
-import ApplicationsList from "../organisms/ApplicationList";
-import InterviewsList from "../organisms/InterviewList";
-import BookmarksList from "../organisms/BookmarkList";
+import ApplicationsList from "../organisms/job-dashboard/ApplicationList";
+import InterviewsList from "../organisms/job-dashboard/InterviewList";
+import BookmarksList from "../organisms/job-dashboard/BookmarkList";
 
 const { Title, Text } = Typography;
 

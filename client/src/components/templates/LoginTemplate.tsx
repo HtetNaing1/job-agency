@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { login } from "@/lib/auth";
 
 // 🔹 Lazy load organisms/molecules to improve performance
-const LoginCard = dynamic(() => import("../organisms/LoginCard"), {
+const LoginCard = dynamic(() => import("../organisms/auth/LoginCard"), {
   ssr: false,
   loading: () => (
     <div className="bg-white rounded-2xl shadow-lg p-8 animate-pulse h-[420px]" />

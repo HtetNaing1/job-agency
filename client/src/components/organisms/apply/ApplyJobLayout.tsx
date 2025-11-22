@@ -1,7 +1,7 @@
 "use client";
 import { Divider } from "antd";
-import JobDetailsSection from "../molecules/JobDetailsSection";
-import ApplicationForm from "../molecules/ApplicationForm";
+import JobDetailsSection from "@/components/molecules/JobDetailsSection";
+import ApplicationForm from "@/components/molecules/ApplicationForm";
 import { JobData } from "@/constant/type";
 
 export default function ApplyJobLayout({ job }: { job: JobData }) {

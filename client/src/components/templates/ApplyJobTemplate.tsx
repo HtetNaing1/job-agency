@@ -3,7 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Divider } from "antd";
-import ApplyJobLayout from "../organisms/ApplyJobLayout";
+import ApplyJobLayout from "../organisms/apply/ApplyJobLayout";
 import JobInfoCard from "../molecules/JobInfoCard";
 import { JobData } from "@/constant/type";
 

@@ -1,9 +1,9 @@
 "use client";
 import { Divider, Select } from "antd";
 import { Briefcase, MapPin } from "lucide-react";
-import Button from "../atoms/Button";
-import TextInput from "../atoms/TextInput";
-import FilterGroup from "../molecules/FilterGroup";
+import Button from "@/components/atoms/Button";
+import TextInput from "@/components/atoms/TextInput";
+import FilterGroup from "@/components/molecules/FilterGroup";
 
 export default function FilterSidebar() {
   return (

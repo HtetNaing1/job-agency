@@ -2,9 +2,9 @@
 
 import { Button, Row, Col, Typography, Card, Space, Tag, Rate } from "antd";
 import { ArrowLeft, Mail, Phone, MapPin, Briefcase, Calendar as CalendarIcon, GraduationCap, FileText, Star } from "lucide-react";
-import QuickActionsPanel from "@/components/organisms/QuickActionsPanel";
-import StatusActionsPanel from "@/components/organisms/StatusActionsPanel";
-import TimelinePanel from "@/components/organisms/TimelinePanel";
+import QuickActionsPanel from "@/components/organisms/employer-dashboard/QuickActionsPanel";
+import StatusActionsPanel from "@/components/organisms/employer-dashboard/StatusActionsPanel";
+import TimelinePanel from "@/components/organisms/employer-dashboard/TimelinePanel";
 import { Application, AppStatus } from "@/constant/type";
 import { useState } from "react";
 
@@ -12,11 +12,9 @@ const { Title, Text, Paragraph } = Typography;
 
 export default function ApplicantProfilePage({
   application,
-  onBack,
   onStatusChange,
 }: {
   application: Application;
-  onBack: () => void;
   onStatusChange?: (id: string, s: AppStatus) => void;
 }) {
   const [rating, setRating] = useState<number>(application.rating || 0);
@@ -24,7 +22,7 @@ export default function ApplicantProfilePage({
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <Button type="text" onClick={onBack} className="mb-4">
+        <Button type="text" className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Applications
         </Button>
 

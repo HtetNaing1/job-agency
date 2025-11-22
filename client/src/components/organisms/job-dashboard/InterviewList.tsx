@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, List } from "antd";
-import { Interview } from "../templates/JobDashboardTemplate";
+import { Interview } from "@/components/templates/JobDashboardTemplate";
 import InterviewItem from "@/components/molecules/InterviewItem";
 
 export default function InterviewsList({ interviews }: { interviews: Interview[] }) {

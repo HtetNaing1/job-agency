@@ -1,6 +1,6 @@
 "use client";
 
-import AuthForm from "../molecules/AuthForm";
+import AuthForm from "@/components/molecules/AuthForm";
 
 interface LoginCardProps {
   formData: {
