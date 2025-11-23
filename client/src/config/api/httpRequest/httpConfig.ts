@@ -2,7 +2,7 @@ import { refreshAccessToken } from "@/lib/auth";
 import { useErrorStore } from "@/utils/errorStore";
 import Cookies from "js-cookie"
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5500";
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
 
