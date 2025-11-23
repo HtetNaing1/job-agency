@@ -3,7 +3,7 @@ import User from '../models/User.js';
 // Get current user profile
 export const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.userId).select('-password');
 
     if (!user) {
       return res.status(404).json({
@@ -75,7 +75,7 @@ export const updateProfile = async (req, res) => {
       courses,
     } = req.body;
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
 
     if (!user) {
       return res.status(404).json({
@@ -130,7 +130,7 @@ export const updateProfile = async (req, res) => {
 // Complete onboarding
 export const completeOnboarding = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
 
     if (!user) {
       return res.status(404).json({
