@@ -143,6 +143,26 @@ export const EXPERIENCE = ["Entry Level","Mid Level","Senior Level","Executive"]
 export const CATEGORIES = ["Technology","Marketing","Sales","Design","Finance","Operations","Human Resources","Customer Service","Engineering","Product Management","Data Science","Healthcare","Education","Legal","Other"];
 export const BENEFITS = ["Health Insurance","Dental Insurance","Vision Insurance","401(k) Matching","Paid Time Off","Flexible Schedule","Remote Work","Professional Development","Gym Membership","Life Insurance","Stock Options","Bonus Program"];
 export const CURRENCIES = ["USD","EUR","GBP","CAD","AUD"] as const;
+export const COMMON_SKILLS = [
+  // Programming Languages
+  "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "Ruby", "PHP", "Go", "Rust", "Swift", "Kotlin", "Scala",
+  // Frontend
+  "React", "Vue.js", "Angular", "Next.js", "HTML", "CSS", "Tailwind CSS", "SASS", "Redux", "MobX",
+  // Backend
+  "Node.js", "Express.js", "Django", "Flask", "Spring Boot", "ASP.NET", "Ruby on Rails", "Laravel",
+  // Databases
+  "MongoDB", "PostgreSQL", "MySQL", "Redis", "Elasticsearch", "Firebase", "DynamoDB", "Oracle",
+  // Cloud & DevOps
+  "AWS", "Azure", "Google Cloud", "Docker", "Kubernetes", "CI/CD", "Jenkins", "GitLab", "GitHub Actions",
+  // Mobile
+  "React Native", "Flutter", "iOS Development", "Android Development", "Xamarin",
+  // Data & AI
+  "Machine Learning", "Data Analysis", "TensorFlow", "PyTorch", "Pandas", "NumPy", "SQL", "Power BI", "Tableau",
+  // Tools & Other
+  "Git", "Agile", "Scrum", "JIRA", "REST API", "GraphQL", "Microservices", "Unit Testing", "Jest", "Cypress",
+  // Soft Skills
+  "Project Management", "Team Leadership", "Communication", "Problem Solving", "Critical Thinking"
+];
 
 //
 export type JobStatus = "active" | "paused" | "closed";

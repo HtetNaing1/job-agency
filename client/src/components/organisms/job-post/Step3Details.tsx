@@ -1,8 +1,9 @@
 "use client";
-import { Form, Input } from "antd";
+import { Form, Input, Select } from "antd";
 import { Users } from "lucide-react";
 import OnboardCard from "@/components/atoms/OnboardCard";
 import TagsInput from "@/components/atoms/TagsInput";
+import { COMMON_SKILLS } from "@/constant/type";
 
 const { TextArea } = Input;
 
@@ -31,7 +32,15 @@ export default function Step3Details() {
         </Form.Item>
 
         <Form.Item name="skills" label="Required Skills & Technologies" initialValue={[]}>
-          <TagsInput placeholder="e.g., React, Python, Project Management" />
+          <Select
+            mode="tags"
+            placeholder="Select or type skills (press Enter to add custom)"
+            options={COMMON_SKILLS.map(skill => ({ label: skill, value: skill }))}
+            maxTagCount="responsive"
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+          />
         </Form.Item>
       </OnboardCard>
     </div>
