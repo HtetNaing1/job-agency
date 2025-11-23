@@ -34,8 +34,8 @@ export interface JobData {
   benefits?: string[];
 };
 
-// Shared type for the whole flow
-export type OnboardingData = {
+// Shared base fields for all roles
+type BaseOnboardingData = {
   // Basic
   firstName: string;
   lastName: string;
@@ -49,6 +49,15 @@ export type OnboardingData = {
   state: string;
   zipCode: string;
 
+  // Final
+  profilePicture: string;
+  bio: string;
+  linkedinUrl: string;
+};
+
+// Job Seeker specific onboarding data
+export type JobSeekerOnboardingData = BaseOnboardingData & {
+  role: "jobseeker";
   // Professional
   experienceLevel: string;
   industry: string;
@@ -62,12 +71,45 @@ export type OnboardingData = {
   locationPreferences: string[];
   remoteWork: string;
 
-  // Final
-  profilePicture: string;
-  bio: string;
-  linkedinUrl: string;
+  // Final (additional)
   portfolioUrl: string;
 };
+
+// Employer specific onboarding data
+export type EmployerOnboardingData = BaseOnboardingData & {
+  role: "employer";
+  // Company Info
+  companySize: string;
+  industry: string;
+  website: string;
+  companyDescription: string;
+
+  // Hiring Needs
+  positionsSeeking: string[];
+  departmentFocus: string[];
+  hiringTimeline: string;
+};
+
+// Training Provider specific onboarding data
+export type TrainingProviderOnboardingData = BaseOnboardingData & {
+  role: "trainingProvider";
+  // Training Info
+  courses: string[];
+  certificationTypes: string[];
+  trainingFormats: string[];
+
+  // Program Details
+  pricingModel: string;
+  programDuration: string;
+  studentCapacity: number;
+  specialPrograms: string;
+};
+
+// Union type for all onboarding data
+export type OnboardingData =
+  | JobSeekerOnboardingData
+  | EmployerOnboardingData
+  | TrainingProviderOnboardingData;
 
 
 export type JobFormData = {

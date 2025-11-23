@@ -141,52 +141,104 @@ export const completeOnboarding = async (req, res) => {
 
     // Update user with onboarding data
     const {
-      name,
+      // Common fields
+      firstName,
+      lastName,
+      gender,
+      dateOfBirth,
       phone,
-      location,
+      address,
+      city,
+      state,
+      zipCode,
       bio,
       avatar,
+      linkedinUrl,
+
+      // Job seeker fields
       resume,
       skills,
+      experienceLevel,
+      currentRole,
       experience,
       education,
       certifications,
-      companyName,
+      jobType,
+      salaryRange,
+      locationPreferences,
+      remoteWork,
+      portfolioUrl,
+
+      // Employer fields
       companySize,
       industry,
       website,
       companyDescription,
-      trainingProvider,
+      positionsSeeking,
+      departmentFocus,
+      hiringTimeline,
+
+      // Training provider fields
       courses,
+      certificationTypes,
+      trainingFormats,
+      pricingModel,
+      programDuration,
+      studentCapacity,
+      specialPrograms,
     } = req.body;
 
     // Update common fields
-    if (name) user.name = name;
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (firstName && lastName) user.name = `${firstName} ${lastName}`;
+    if (gender) user.gender = gender;
+    if (dateOfBirth) user.dateOfBirth = dateOfBirth;
     if (phone) user.phone = phone;
-    if (location) user.location = location;
+    if (address) user.address = address;
+    if (city) user.city = city;
+    if (state) user.state = state;
+    if (zipCode) user.zipCode = zipCode;
     if (bio) user.bio = bio;
     if (avatar) user.avatar = avatar;
+    if (linkedinUrl) user.linkedinUrl = linkedinUrl;
+
+    // Create location string from address components
+    if (city || state) {
+      user.location = [city, state].filter(Boolean).join(', ');
+    }
 
     // Update role-specific fields based on user role
     if (user.role === 'jobseeker') {
       if (resume) user.resume = resume;
       if (skills) user.skills = skills;
+      if (experienceLevel) user.experienceLevel = experienceLevel;
+      if (currentRole) user.currentRole = currentRole;
       if (experience) user.experience = experience;
       if (education) user.education = education;
       if (certifications) user.certifications = certifications;
+      if (jobType) user.jobType = jobType;
+      if (salaryRange) user.salaryRange = salaryRange;
+      if (locationPreferences) user.locationPreferences = locationPreferences;
+      if (remoteWork) user.remoteWork = remoteWork;
+      if (portfolioUrl) user.portfolioUrl = portfolioUrl;
     } else if (user.role === 'employer') {
-      if (companyName) user.companyName = companyName;
       if (companySize) user.companySize = companySize;
       if (industry) user.industry = industry;
       if (website) user.website = website;
       if (companyDescription) user.companyDescription = companyDescription;
+      if (positionsSeeking) user.positionsSeeking = positionsSeeking;
+      if (departmentFocus) user.departmentFocus = departmentFocus;
+      if (hiringTimeline) user.hiringTimeline = hiringTimeline;
     } else if (user.role === 'trainingProvider') {
-      if (trainingProvider) user.trainingProvider = trainingProvider;
       if (courses) user.courses = courses;
+      if (certificationTypes) user.certificationTypes = certificationTypes;
+      if (trainingFormats) user.trainingFormats = trainingFormats;
+      if (pricingModel) user.pricingModel = pricingModel;
+      if (programDuration) user.programDuration = programDuration;
+      if (studentCapacity) user.studentCapacity = studentCapacity;
+      if (specialPrograms) user.specialPrograms = specialPrograms;
     }
-
-    // Mark onboarding as complete
-    user.firstTimeLogin = false;
 
     await user.save();
 
