@@ -26,17 +26,20 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
   const accessToken = Cookies.get("accessToken");
   const refreshToken = Cookies.get("refreshToken");
 
-  if (!accessToken || !refreshToken) {
+  // Allow requests without authentication for public endpoints
+  const isPublicEndpoint = url.startsWith("/api/v1/jobs") && method === "GET";
+
+  if (!isPublicEndpoint && (!accessToken || !refreshToken)) {
     throw new Error("Not authenticated");
   }
 
-  const createConfig = (token: string): RequestInit => {
+  const createConfig = (token?: string): RequestInit => {
     const isFormData = body instanceof FormData;
     return {
       method,
       headers: {
         ...(!isFormData && { "Content-Type": "application/json" }),
-        Authorization: `Bearer ${token}`,
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...customConfig.headers,
       },
       body: isFormData ? body : body ? JSON.stringify(body) : undefined,
@@ -44,7 +47,7 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
     };
   };
 
-  const executeRequest = async (token: string): Promise<TResponse> => {
+  const executeRequest = async (token?: string): Promise<TResponse> => {
     const response = await fetch(`${API_URL}${url}`, createConfig(token));
     console.log("token", token);
     console.log("response", response);
@@ -65,7 +68,7 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
     return await executeRequest(accessToken);
   } catch (err) {
     const error = err as ErrorType;
-    if (error.status === 401) {
+    if (error.status === 401 && !isPublicEndpoint) {
       if (error.status === 401 && error.message === "User is disabled.") {
         useErrorStore.getState().setDisabledError(true);
         return new Promise<never>(() => {});
@@ -73,7 +76,7 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
       console.log("", error);
       let tokens = null;
       try {
-        if (!isRefreshing) {
+        if (!isRefreshing && refreshToken) {
           isRefreshing = true;
           tokens = await refreshAccessToken(refreshToken);
         }

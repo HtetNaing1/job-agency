@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { Button, Form, message } from "antd";
 import StepBar from "@/components/molecules/StepBar";
 import { JobFormData } from "@/constant/type";
+import { createJob } from "@/services/jobService";
 
 const Step1Basic = dynamic(() => import("@/components/organisms/job-post/Step1Basic"), { ssr: false });
 const Step2Comp  = dynamic(() => import("@/components/organisms/job-post/Step2Comp"),  { ssr: false });
@@ -14,8 +16,10 @@ const Step4Review = dynamic(() => import("@/components/organisms/job-post/Step4R
 const TITLES = ["Basic Info","Compensation","Details","Review & Publish"];
 
 export default function EmployerJobPostTemplate() {
+  const router = useRouter();
   const [form] = Form.useForm<JobFormData>();
   const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
   const total = 4;
   const Current = useMemo(() => {
     switch (step) {
@@ -39,13 +43,55 @@ export default function EmployerJobPostTemplate() {
 
   const submit = async () => {
     try {
+      setSubmitting(true);
       await form.validateFields();
       const values = form.getFieldsValue(true);
-      console.log("POST /jobs", values);
-      message.success("Job posted successfully");
-      form.resetFields();
-      setStep(1);
-    } catch {/* AntD shows messages */}
+
+      // Map JobFormData to backend Job schema
+      const jobData = {
+        title: values.title,
+        company: values.company,
+        location: values.location,
+        employmentType: values.jobType,
+        workMode: values.workModel,
+        description: values.description,
+        requirements: values.requirements,
+        responsibilities: values.responsibilities,
+        skills: values.skills,
+        experience: values.experienceLevel,
+        education: "", // Optional field
+        salaryMin: values.salaryMin,
+        salaryMax: values.salaryMax,
+        benefits: values.benefits,
+        applicationDeadline: values.applicationDeadline,
+        status: "active",
+      };
+
+      const response = await createJob(jobData);
+
+      if (response.err === 0) {
+        message.success("Job posted successfully!");
+        form.resetFields();
+        setStep(1);
+
+        // Redirect to employer dashboard after 1 second
+        setTimeout(() => {
+          router.push("/employer/dashboard");
+        }, 1000);
+      } else {
+        message.error(response.message || "Failed to post job");
+      }
+    } catch (error: any) {
+      console.error("Error posting job:", error);
+      if (error?.message === "Not authenticated") {
+        message.error("Please log in to post a job");
+        router.push("/login");
+      } else {
+        message.error("Failed to post job. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -74,9 +120,9 @@ export default function EmployerJobPostTemplate() {
             <Current />
 
             <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
-              <Button onClick={prev} disabled={step === 1} className="h-10">Previous</Button>
+              <Button onClick={prev} disabled={step === 1 || submitting} className="h-10">Previous</Button>
               {step === total ? (
-                <Button type="primary" onClick={submit} className="h-10 px-6 bg-blue-600">
+                <Button type="primary" onClick={submit} loading={submitting} className="h-10 px-6 bg-blue-600">
                   Post Job
                 </Button>
               ) : (
