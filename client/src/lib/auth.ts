@@ -6,7 +6,7 @@ import {
 } from "@/constant/type";
 import Cookies from "js-cookie"; // ← add this
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5500";
 
 export async function register(payload: {
   name: string;

@@ -1,72 +1,52 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: job-agency-mongodb
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: job-agency
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - job-agency-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
+  # Backend Service
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: job-agency-backend
-    restart: always
     ports:
       - "5500:5500"
     environment:
       - NODE_ENV=development
       - PORT=5500
-      - DB_URI=mongodb://mongodb:27017/job-agency
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-12345
-      - REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production-67890
-      - CLIENT_URL=http://localhost:3001
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - job-agency-network
+    env_file:
+      - ./server/.env.development.local
     volumes:
       - ./server:/app
       - /app/node_modules
+      - ./server/uploads:/app/uploads
+    networks:
+      - job-agency-network
+    restart: unless-stopped
+    command: npm run dev
 
+  # Frontend Service
   frontend:
     build:
       context: ./client
       dockerfile: Dockerfile
     container_name: job-agency-frontend
-    restart: always
     ports:
       - "3001:3001"
     environment:
+      - NODE_ENV=development
       - NEXT_PUBLIC_BACKEND_URL=http://localhost:5500
-      - NEXT_PUBLIC_APP_URL=http://localhost:3001
-    depends_on:
-      - backend
-    networks:
-      - job-agency-network
+    env_file:
+      - ./client/.env.local
     volumes:
       - ./client:/app
       - /app/node_modules
       - /app/.next
+    networks:
+      - job-agency-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    command: npm run dev
 
 networks:
   job-agency-network:
     driver: bridge
-
-volumes:
-  mongodb_data:
-    driver: local
