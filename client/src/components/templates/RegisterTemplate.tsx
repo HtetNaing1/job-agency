@@ -68,12 +68,11 @@ export default function RegisterTemplate() {
           : null,
       };
 
-      const { firstTimeLogin } = await register(payload);
+      await register(payload);
       message.success("Account created successfully!");
 
-      // Redirect to onboarding for new users
-      const redirectPath = firstTimeLogin ? "/onboarding" : "/jobs";
-      setTimeout(() => router.push(redirectPath), 500);
+      // Always redirect to onboarding for new registrations
+      setTimeout(() => router.push("/onboarding"), 500);
     } catch (err: any) {
       message.error(err?.message || "Failed to create account");
     } finally {
