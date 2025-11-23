@@ -72,7 +72,10 @@ export default function RegisterTemplate() {
       message.success("Account created successfully!");
 
       // Always redirect to onboarding for new registrations
-      setTimeout(() => router.push("/onboarding"), 500);
+      // Use hard navigation to ensure cookies are sent with the request
+      setTimeout(() => {
+        window.location.href = "/onboarding";
+      }, 500);
     } catch (err: any) {
       message.error(err?.message || "Failed to create account");
     } finally {

@@ -47,9 +47,9 @@ export async function register(payload: {
   const data = json?.data ?? json;
   const { accessToken, refreshToken, firstTimeLogin } = data;
 
-  // Persist for your fetchRequest
-  Cookies.set("accessToken", accessToken);
-  Cookies.set("refreshToken", refreshToken);
+  // Persist for your fetchRequest with explicit path
+  Cookies.set("accessToken", accessToken, { path: "/", sameSite: "lax" });
+  Cookies.set("refreshToken", refreshToken, { path: "/", sameSite: "lax" });
 
   return { accessToken, refreshToken, firstTimeLogin };
 }
@@ -84,9 +84,9 @@ export async function login(
 
   const { accessToken, refreshToken, firstTimeLogin } = response.data;
 
-  // ✅ Persist tokens so fetchRequest can use them
-  Cookies.set("accessToken", accessToken);
-  Cookies.set("refreshToken", refreshToken);
+  // ✅ Persist tokens so fetchRequest can use them with explicit path
+  Cookies.set("accessToken", accessToken, { path: "/", sameSite: "lax" });
+  Cookies.set("refreshToken", refreshToken, { path: "/", sameSite: "lax" });
 
   return { accessToken, refreshToken, firstTimeLogin };
 }
@@ -114,8 +114,8 @@ export async function refreshAccessToken(
 
   // Optionally re-persist here so concurrent tabs stay in sync
   const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
-  Cookies.set("accessToken", newAccess);
-  Cookies.set("refreshToken", newRefresh);
+  Cookies.set("accessToken", newAccess, { path: "/", sameSite: "lax" });
+  Cookies.set("refreshToken", newRefresh, { path: "/", sameSite: "lax" });
 
   return response.data;
 }
