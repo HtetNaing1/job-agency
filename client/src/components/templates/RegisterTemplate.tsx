@@ -70,7 +70,12 @@ export default function RegisterTemplate() {
 
       await register(payload);
       message.success("Account created successfully!");
-      setTimeout(() => router.push("/login"), 500);
+
+      // Redirect to onboarding for new registrations
+      // Cookies are now set via HTTP headers, so we can use Next.js router
+      setTimeout(() => {
+        router.push("/onboarding");
+      }, 500);
     } catch (err: any) {
       message.error(err?.message || "Failed to create account");
     } finally {

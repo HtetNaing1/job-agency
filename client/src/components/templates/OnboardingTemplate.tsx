@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Form, message } from "antd";
+import { Form, message, Spin } from "antd";
 import OnboardingHeader from "@/components/molecules/OnboardingHeader";
 import OnboardingProgress from "@/components/molecules/OnboardingProgress";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { OnboardingData } from "@/constant/type";
+import { getMyProfile, completeOnboarding } from "@/services/profileService";
+import { useRouter } from "next/navigation";
 
+// Job Seeker Steps
 const BasicInfoStep = dynamic(
   () => import("@/components/organisms/onboarding/BasicInfoStep"),
   { ssr: false }
@@ -30,11 +33,47 @@ const FinalStep = dynamic(
   { ssr: false }
 );
 
-const TITLES = [
+// Employer Steps
+const CompanyInfoStep = dynamic(
+  () => import("@/components/organisms/onboarding/employer/CompanyInfoStep"),
+  { ssr: false }
+);
+const HiringNeedsStep = dynamic(
+  () => import("@/components/organisms/onboarding/employer/HiringNeedsStep"),
+  { ssr: false }
+);
+
+// Training Provider Steps
+const TrainingInfoStep = dynamic(
+  () => import("@/components/organisms/onboarding/trainingProvider/TrainingInfoStep"),
+  { ssr: false }
+);
+const ProgramDetailsStep = dynamic(
+  () => import("@/components/organisms/onboarding/trainingProvider/ProgramDetailsStep"),
+  { ssr: false }
+);
+
+const JOB_SEEKER_TITLES = [
   "Basic Information",
   "Contact Details",
   "Professional Background",
   "Job Preferences",
+  "Complete Profile",
+] as const;
+
+const EMPLOYER_TITLES = [
+  "Basic Information",
+  "Contact Details",
+  "Company Information",
+  "Hiring Needs",
+  "Complete Profile",
+] as const;
+
+const TRAINING_PROVIDER_TITLES = [
+  "Basic Information",
+  "Contact Details",
+  "Training Programs",
+  "Program Details",
   "Complete Profile",
 ] as const;
 
@@ -43,70 +82,191 @@ const WARN_KEY = "onboarding-step-warning";
 export default function OnboardingTemplate() {
   const [step, setStep] = useState(1);
   const [form] = Form.useForm();
-
+  const [userRole, setUserRole] = useState<"jobseeker" | "employer" | "trainingProvider" | null>(null);
+  const [loading, setLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
+  const router = useRouter();
+
+  // Fetch user profile to determine role
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await getMyProfile();
+        if (response.err === 0 && response.data) {
+          setUserRole(response.data.role);
+        } else {
+          messageApi.error("Failed to load user profile");
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        messageApi.error("Failed to load user profile");
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [messageApi, router]);
+
+  // Get titles based on role
+  const TITLES = useMemo(() => {
+    if (!userRole) return JOB_SEEKER_TITLES;
+    switch (userRole) {
+      case "employer":
+        return EMPLOYER_TITLES;
+      case "trainingProvider":
+        return TRAINING_PROVIDER_TITLES;
+      default:
+        return JOB_SEEKER_TITLES;
+    }
+  }, [userRole]);
+
   const total = TITLES.length;
 
+  // Get current step component based on role and step number
   const Current = useMemo(() => {
-    switch (step) {
-      case 1:
-        return BasicInfoStep;
-      case 2:
-        return ContactInfoStep;
-      case 3:
-        return ProfessionalInfoStep;
-      case 4:
-        return PreferencesStep;
-      case 5:
-        return FinalStep;
-      default:
-        return BasicInfoStep;
+    if (!userRole) return BasicInfoStep;
+
+    // Steps 1, 2, and 5 are shared across all roles
+    if (step === 1) return BasicInfoStep;
+    if (step === 2) return ContactInfoStep;
+    if (step === 5) return FinalStep;
+
+    // Role-specific steps (3 and 4)
+    if (userRole === "jobseeker") {
+      if (step === 3) return ProfessionalInfoStep;
+      if (step === 4) return PreferencesStep;
+    } else if (userRole === "employer") {
+      if (step === 3) return CompanyInfoStep;
+      if (step === 4) return HiringNeedsStep;
+    } else if (userRole === "trainingProvider") {
+      if (step === 3) return TrainingInfoStep;
+      if (step === 4) return ProgramDetailsStep;
     }
-  }, [step]);
 
-  // IMPORTANT: do NOT force this to OnboardingData; let DatePicker hold Dayjs
-  const initialValues = {
-    firstName: "",
-    lastName: "",
-    gender: undefined, // was ""
-    dateOfBirth: undefined, // already fixed earlier
+    return BasicInfoStep;
+  }, [step, userRole]);
 
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
+  // Get initial values based on user role
+  const getInitialValues = () => {
+    const baseValues = {
+      firstName: "",
+      lastName: "",
+      gender: undefined,
+      dateOfBirth: undefined,
+      phone: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      profilePicture: [] as any[],
+      bio: "",
+      linkedinUrl: "",
+    };
 
-    experienceLevel: undefined, // was ""
-    industry: undefined, // was ""
-    currentRole: "",
-    skills: [] as string[],
-    education: undefined, // was ""
-
-    jobType: [] as string[], // OK for multiple
-    salaryRange: undefined, // was ""
-    locationPreferences: [] as string[], // OK for multiple
-    remoteWork: undefined, // was ""
-
-    profilePicture: [] as any[],
-    bio: "",
-    linkedinUrl: "",
-    portfolioUrl: "",
+    if (userRole === "employer") {
+      return {
+        ...baseValues,
+        companySize: undefined,
+        industry: undefined,
+        website: "",
+        companyDescription: "",
+        positionsSeeking: [] as string[],
+        departmentFocus: [] as string[],
+        hiringTimeline: undefined,
+      };
+    } else if (userRole === "trainingProvider") {
+      return {
+        ...baseValues,
+        courses: [] as string[],
+        certificationTypes: [] as string[],
+        trainingFormats: [] as string[],
+        pricingModel: undefined,
+        programDuration: undefined,
+        studentCapacity: undefined,
+        specialPrograms: "",
+      };
+    } else {
+      // jobseeker
+      return {
+        ...baseValues,
+        experienceLevel: undefined,
+        industry: undefined,
+        currentRole: "",
+        skills: [] as string[],
+        education: undefined,
+        jobType: [] as string[],
+        salaryRange: undefined,
+        locationPreferences: [] as string[],
+        remoteWork: undefined,
+        portfolioUrl: "",
+      };
+    }
   };
 
-  const fieldsByStep: Record<number, string[]> = {
-    1: ["firstName", "lastName", "gender", "dateOfBirth"],
-    2: ["phone", "address", "city", "state", "zipCode"],
-    3: ["experienceLevel", "industry", "currentRole", "skills", "education"],
-    4: ["jobType", "salaryRange", "locationPreferences", "remoteWork"],
+  // Get fields by step based on role
+  const getFieldsByStep = (): Record<number, string[]> => {
+    const baseFields = {
+      1: ["firstName", "lastName", "gender", "dateOfBirth"],
+      2: ["phone", "address", "city", "state", "zipCode"],
+    };
+
+    if (userRole === "employer") {
+      return {
+        ...baseFields,
+        3: ["companySize", "industry", "website", "companyDescription"],
+        4: ["positionsSeeking", "departmentFocus", "hiringTimeline"],
+      };
+    } else if (userRole === "trainingProvider") {
+      return {
+        ...baseFields,
+        3: ["courses", "certificationTypes", "trainingFormats"],
+        4: ["pricingModel", "programDuration", "studentCapacity"],
+      };
+    } else {
+      // jobseeker
+      return {
+        ...baseFields,
+        3: ["experienceLevel", "industry", "currentRole", "skills", "education"],
+        4: ["jobType", "salaryRange", "locationPreferences", "remoteWork"],
+      };
+    }
   };
 
-  const warningTextByStep: Record<number, string> = {
-    1: "Please complete your name, gender, and date of birth to continue.",
-    2: "Please complete your phone and address details to continue.",
-    3: "Please complete experience, industry, role, skills and education to continue.",
-    4: "Please choose job types, salary range, locations and work arrangement to continue.",
+  // Get warning text by step based on role
+  const getWarningTextByStep = (): Record<number, string> => {
+    const baseWarnings = {
+      1: "Please complete your name, gender, and date of birth to continue.",
+      2: "Please complete your phone and address details to continue.",
+    };
+
+    if (userRole === "employer") {
+      return {
+        ...baseWarnings,
+        3: "Please complete your company information to continue.",
+        4: "Please complete your hiring needs to continue.",
+      };
+    } else if (userRole === "trainingProvider") {
+      return {
+        ...baseWarnings,
+        3: "Please complete your training program information to continue.",
+        4: "Please complete your program details to continue.",
+      };
+    } else {
+      // jobseeker
+      return {
+        ...baseWarnings,
+        3: "Please complete experience, industry, role, skills and education to continue.",
+        4: "Please choose job types, salary range, locations and work arrangement to continue.",
+      };
+    }
   };
+
+  const initialValues = useMemo(() => getInitialValues(), [userRole]);
+  const fieldsByStep = useMemo(() => getFieldsByStep(), [userRole]);
+  const warningTextByStep = useMemo(() => getWarningTextByStep(), [userRole]);
 
   const showStepWarning = (s: number) => {
     const msg =
@@ -161,17 +321,51 @@ export default function OnboardingTemplate() {
 
     const raw = form.getFieldsValue(true);
     // Convert Dayjs -> string yyyy-mm-dd for API payload
-    const values: OnboardingData = {
+    const onboardingData = {
       ...raw,
       dateOfBirth: raw.dateOfBirth
         ? dayjs(raw.dateOfBirth).format("YYYY-MM-DD")
         : "",
+      role: userRole,
     };
 
-    console.log("Onboarding complete", values);
-    message.success("Profile setup complete!");
-    messageApi.destroy(WARN_KEY);
+    try {
+      const response = await completeOnboarding(onboardingData);
+
+      if (response.err === 0) {
+        message.success("Profile setup complete!");
+        messageApi.destroy(WARN_KEY);
+
+        // Clear the onboarding flag cookie
+        document.cookie = "needsOnboarding=; path=/; max-age=0";
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (userRole === "employer") {
+            router.push("/employer-dashboard");
+          } else if (userRole === "trainingProvider") {
+            router.push("/jobs"); // TODO: Create training provider dashboard
+          } else {
+            router.push("/jobs");
+          }
+        }, 1500);
+      } else {
+        message.error(response.message || "Failed to complete onboarding");
+      }
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+      message.error("Failed to complete onboarding. Please try again.");
+    }
   };
+
+  // Show loading spinner while fetching user role
+  if (loading || !userRole) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/40 text-slate-900 flex items-center justify-center">
+        <Spin size="large" tip="Loading your profile..." />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/40 text-slate-900">

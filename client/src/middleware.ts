@@ -57,7 +57,10 @@ export async function middleware(req: NextRequest) {
       // but DO NOT redirect "/" to "/"
       const authPages = new Set(["/login", "/register", "/forgot-password"]);
       if (authPages.has(pathname)) {
-        return NextResponse.redirect(new URL(POST_LOGIN_LANDING, req.url));
+        // Check if user needs onboarding (newly registered users)
+        const needsOnboarding = req.cookies.get("needsOnboarding")?.value;
+        const targetPath = needsOnboarding === "true" ? "/onboarding" : POST_LOGIN_LANDING;
+        return NextResponse.redirect(new URL(targetPath, req.url));
       }
 
       // Already on "/" or other public page → allow

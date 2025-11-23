@@ -2,7 +2,7 @@ import { refreshAccessToken } from "@/lib/auth";
 import { useErrorStore } from "@/utils/errorStore";
 import Cookies from "js-cookie"
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5500";
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -26,25 +26,29 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
   const accessToken = Cookies.get("accessToken");
   const refreshToken = Cookies.get("refreshToken");
 
-  if (!accessToken || !refreshToken) {
+  // Allow requests without authentication for public endpoints
+  const isPublicEndpoint = url.startsWith("/api/v1/jobs") && method === "GET";
+
+  if (!isPublicEndpoint && (!accessToken || !refreshToken)) {
     throw new Error("Not authenticated");
   }
 
-  const createConfig = (token: string): RequestInit => {
+  const createConfig = (token?: string): RequestInit => {
     const isFormData = body instanceof FormData;
     return {
       method,
       headers: {
         ...(!isFormData && { "Content-Type": "application/json" }),
-        Authorization: `Bearer ${token}`,
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...customConfig.headers,
       },
+      credentials: 'include', // Enable cross-origin cookies
       body: isFormData ? body : body ? JSON.stringify(body) : undefined,
       ...customConfig,
     };
   };
 
-  const executeRequest = async (token: string): Promise<TResponse> => {
+  const executeRequest = async (token?: string): Promise<TResponse> => {
     const response = await fetch(`${API_URL}${url}`, createConfig(token));
     console.log("token", token);
     console.log("response", response);
@@ -65,15 +69,18 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
     return await executeRequest(accessToken);
   } catch (err) {
     const error = err as ErrorType;
-    if (error.status === 401) {
+    if (error.status === 401 && !isPublicEndpoint) {
       if (error.status === 401 && error.message === "User is disabled.") {
         useErrorStore.getState().setDisabledError(true);
-        return new Promise<never>(() => {});
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+        window.location.href = "/login";
+        throw new Error("Your account has been disabled. Please contact support.");
       }
       console.log("", error);
       let tokens = null;
       try {
-        if (!isRefreshing) {
+        if (!isRefreshing && refreshToken) {
           isRefreshing = true;
           tokens = await refreshAccessToken(refreshToken);
         }
@@ -84,9 +91,16 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
           isRefreshing = false;
           console.log("newAccessToken", newAccessToken);
           console.log("newRefreshToken :>> ", newRefreshToken);
-          Cookies.set("accessToken", newAccessToken);
-          Cookies.set("refreshToken", newRefreshToken);
+          Cookies.set("accessToken", newAccessToken, { path: "/", sameSite: "lax" });
+          Cookies.set("refreshToken", newRefreshToken, { path: "/", sameSite: "lax" });
           return await executeRequest(newAccessToken);
+        } else {
+          // Token refresh failed or is already in progress
+          isRefreshing = false;
+          Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
+          window.location.href = "/login";
+          throw new Error("Session expired. Please login again.");
         }
       } catch (refreshError) {
         isRefreshing = false;

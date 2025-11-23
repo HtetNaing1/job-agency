@@ -41,12 +41,15 @@ export default function LoginTemplate() {
 
     try {
       setSubmitting(true);
-      await login(formData.email.trim(), formData.password);
+      const { firstTimeLogin } = await login(formData.email.trim(), formData.password);
 
-      // Handle redirect after login (middleware ?next=/dashboard)
+      // Handle redirect after login
       const next = searchParams.get("next");
       message.success("Signed in successfully");
-      setTimeout(() => router.push(next || "/jobs"), 500);
+
+      // Redirect to onboarding for first-time users, otherwise to jobs or next param
+      const redirectPath = firstTimeLogin ? "/onboarding" : (next || "/jobs");
+      setTimeout(() => router.push(redirectPath), 500);
     } catch (err: any) {
       message.error(err?.message || "Login failed");
     } finally {

@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./utils/db.js";
@@ -8,6 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 import { PORT } from "./config/env.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,8 +19,17 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Refresh-Token', 'X-Temp-Token'],
+};
+
+app.use(cors(corsOptions));
 // middleware
+app.use(cookieParser());
 app.use(express.json());
 
 // Serve static files (uploaded files)
@@ -32,6 +43,7 @@ app.use("/auth", authRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/applications", applicationRoutes);
 app.use("/api/v1/upload", uploadRoutes);
+app.use("/api/v1/profile", profileRoutes);
 
 // global error handler
 app.use((err, req, res, next) => {

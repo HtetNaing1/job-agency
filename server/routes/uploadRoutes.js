@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  uploadFile,
   uploadResumeFile,
   uploadAvatarFile,
 } from '../controllers/uploadController.js';
@@ -7,12 +8,22 @@ import { authenticate } from '../middleware/authMiddleware.js';
 import {
   uploadResume,
   uploadAvatar,
+  uploadGeneric,
   handleUploadError,
 } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
-// Upload resume (authenticated users only)
+// Generic upload endpoint (authenticated users only)
+router.post(
+  '/',
+  authenticate,
+  uploadGeneric.single('file'),
+  handleUploadError,
+  uploadFile
+);
+
+// Upload resume (authenticated users only) - legacy endpoint
 router.post(
   '/resume',
   authenticate,
@@ -21,7 +32,7 @@ router.post(
   uploadResumeFile
 );
 
-// Upload avatar (authenticated users only)
+// Upload avatar (authenticated users only) - legacy endpoint
 router.post(
   '/avatar',
   authenticate,

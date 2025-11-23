@@ -6,7 +6,7 @@ import {
 } from "@/constant/type";
 import Cookies from "js-cookie"; // ← add this
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5500";
 
 export async function register(payload: {
   name: string;
@@ -21,10 +21,10 @@ export async function register(payload: {
   firstTimeLogin?: boolean;
 }> {
   const res = await fetch(`${API_URL}/auth/register`, {
-    // 👈 align with backend route
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...payload, source: "USER" }), // 👈 keep parity with login
+    credentials: 'include', // Enable cross-origin cookies
+    body: JSON.stringify({ ...payload, source: "USER" }),
   });
 
   // Try to read JSON even on error so we can show a useful message
@@ -47,9 +47,9 @@ export async function register(payload: {
   const data = json?.data ?? json;
   const { accessToken, refreshToken, firstTimeLogin } = data;
 
-  // Persist for your fetchRequest
-  Cookies.set("accessToken", accessToken);
-  Cookies.set("refreshToken", refreshToken);
+  // Persist for your fetchRequest with explicit path
+  Cookies.set("accessToken", accessToken, { path: "/", sameSite: "lax" });
+  Cookies.set("refreshToken", refreshToken, { path: "/", sameSite: "lax" });
 
   return { accessToken, refreshToken, firstTimeLogin };
 }
@@ -70,6 +70,7 @@ export async function login(
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify(data),
   });
 
@@ -84,9 +85,9 @@ export async function login(
 
   const { accessToken, refreshToken, firstTimeLogin } = response.data;
 
-  // ✅ Persist tokens so fetchRequest can use them
-  Cookies.set("accessToken", accessToken);
-  Cookies.set("refreshToken", refreshToken);
+  // ✅ Persist tokens so fetchRequest can use them with explicit path
+  Cookies.set("accessToken", accessToken, { path: "/", sameSite: "lax" });
+  Cookies.set("refreshToken", refreshToken, { path: "/", sameSite: "lax" });
 
   return { accessToken, refreshToken, firstTimeLogin };
 }
@@ -97,9 +98,10 @@ export async function refreshAccessToken(
   const res = await fetch(`${API_URL}/auth/refresh`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json", // ← recommended
+      "Content-Type": "application/json",
       "X-Refresh-Token": refreshToken,
     },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify({ refreshToken }),
   });
 
@@ -114,8 +116,8 @@ export async function refreshAccessToken(
 
   // Optionally re-persist here so concurrent tabs stay in sync
   const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
-  Cookies.set("accessToken", newAccess);
-  Cookies.set("refreshToken", newRefresh);
+  Cookies.set("accessToken", newAccess, { path: "/", sameSite: "lax" });
+  Cookies.set("refreshToken", newRefresh, { path: "/", sameSite: "lax" });
 
   return response.data;
 }
@@ -126,6 +128,7 @@ export async function logout(refreshToken: string): Promise<void> {
     headers: {
       "X-Refresh-Token": refreshToken,
     },
+    credentials: 'include', // Enable cross-origin cookies
   });
 
   // ✅ Clear cookies on client logout
@@ -137,6 +140,7 @@ export async function forgotPassword(email: string): Promise<void> {
   const res = await fetch(`${API_URL}/auth/forgot-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify({ email }),
   });
 
@@ -160,6 +164,7 @@ export async function resetPassword(
       "Content-Type": "application/json",
       "X-Temp-Token": token,
     },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify({ newPassword }),
   });
 

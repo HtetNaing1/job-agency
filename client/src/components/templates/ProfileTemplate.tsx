@@ -1,65 +1,143 @@
 "use client";
 
-import { useState } from "react";
-import { Tabs } from "antd";
+import { useState, useEffect } from "react";
+import { Tabs, Spin, message } from "antd";
 import ProfileHeader from "@/components/molecules/ProfileHeader";
 import ProfileOverview from "@/components/organisms/profile/ProfileOverview";
 import DocumentsSection from "@/components/organisms/profile/DocumentsSection";
-
-type Activity = { title: string; when: string };
-type Profile = {
-  name: string;
-  headline: string;
-  location: string;
-  email: string;
-  phone: string;
-  summary: string;
-  education: { degree: string; school: string; year: string };
-  certifications: string[];
-  completeness: number;
-  strengthTips: { text: string; ok?: boolean }[];
-  activity: Activity[];
-};
-
-const MOCK: Profile = {
-  name: "Sarah Johnson",
-  headline: "Senior Frontend Developer",
-  location: "San Francisco, CA",
-  email: "sarah.johnson@email.com",
-  phone: "+1 (555) 123-4567",
-  summary:
-    "Experienced frontend developer with 5+ years of experience building responsive web applications using React, TypeScript, and modern CSS frameworks. Passionate about creating user-friendly interfaces and collaborating with cross-functional teams.",
-  education: {
-    degree: "Bachelor of Science in Computer Science",
-    school: "University of California, Berkeley",
-    year: "2019",
-  },
-  certifications: ["AWS Certified Developer", "Google Analytics Certified"],
-  completeness: 85,
-  strengthTips: [
-    { text: "Profile photo added", ok: true },
-    { text: "Summary completed", ok: true },
-    { text: "Add more skills" },
-  ],
-  activity: [
-    { title: "Applied to TechCorp Solutions", when: "3 days ago" },
-    { title: "Updated profile summary", when: "1 week ago" },
-    { title: "Uploaded new resume", when: "2 weeks ago" },
-  ],
-};
+import EditProfileModal from "@/components/molecules/EditProfileModal";
+import { getMyProfile, UserProfile } from "@/services/profileService";
 
 export default function ProfileTemplate() {
-  const [profile] = useState(MOCK);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await getMyProfile();
+      if (response.err === 0) {
+        setProfile(response.data);
+      } else {
+        message.error(response.message || "Failed to fetch profile");
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      message.error("Failed to load profile data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate profile completeness
+  const calculateCompleteness = (profile: UserProfile): number => {
+    if (!profile) return 0;
+
+    const fields = [
+      profile.name,
+      profile.email,
+      profile.phone,
+      profile.location,
+      profile.bio,
+      profile.avatar,
+      profile.resume,
+      profile.skills && profile.skills.length > 0,
+      profile.education && profile.education.length > 0,
+      profile.certifications && profile.certifications.length > 0,
+    ];
+
+    const completed = fields.filter(Boolean).length;
+    return Math.round((completed / fields.length) * 100);
+  };
+
+  // Generate strength tips
+  const getStrengthTips = (profile: UserProfile) => {
+    const tips: { text: string; ok?: boolean }[] = [];
+
+    if (profile.avatar) {
+      tips.push({ text: "Profile photo added", ok: true });
+    } else {
+      tips.push({ text: "Add a profile photo" });
+    }
+
+    if (profile.bio && profile.bio.length > 50) {
+      tips.push({ text: "Professional summary completed", ok: true });
+    } else {
+      tips.push({ text: "Add a professional summary" });
+    }
+
+    if (profile.skills && profile.skills.length >= 5) {
+      tips.push({ text: "Skills section completed", ok: true });
+    } else {
+      tips.push({ text: "Add more skills" });
+    }
+
+    if (profile.resume) {
+      tips.push({ text: "Resume uploaded", ok: true });
+    } else {
+      tips.push({ text: "Upload your resume" });
+    }
+
+    return tips;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Failed to load profile</p>
+        </div>
+      </div>
+    );
+  }
+
+  const completeness = calculateCompleteness(profile);
+  const strengthTips = getStrengthTips(profile);
+
+  // Get primary education (first one or empty object)
+  const primaryEducation = profile.education && profile.education.length > 0
+    ? profile.education[0]
+    : null;
+
+  // Get certifications as array of strings
+  const certifications = profile.certifications
+    ? profile.certifications.map(cert => cert.name)
+    : [];
+
+  // Mock activity - in a real app, this would come from an API
+  const activity = [
+    { title: "Profile updated", when: "Recently" },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-6 py-8">
         <ProfileHeader
           name={profile.name}
-          headline={profile.headline}
-          location={profile.location}
+          headline={profile.role}
+          location={profile.location || "Not specified"}
           email={profile.email}
-          onEdit={() => {}}
+          onEdit={() => setEditModalVisible(true)}
+        />
+
+        <EditProfileModal
+          visible={editModalVisible}
+          profile={profile}
+          onClose={() => setEditModalVisible(false)}
+          onUpdate={fetchProfile}
         />
 
         <div className="mt-6">
@@ -77,14 +155,41 @@ export default function ProfileTemplate() {
               {
                 key: "overview",
                 label: <span className="px-4 py-1">Overview</span>,
-                children: <ProfileOverview profile={profile} />,
+                children: (
+                  <ProfileOverview
+                    profile={{
+                      email: profile.email,
+                      phone: profile.phone || "Not specified",
+                      location: profile.location || "Not specified",
+                      summary: profile.bio || "No bio added yet",
+                      education: primaryEducation
+                        ? {
+                            degree: primaryEducation.degree,
+                            school: primaryEducation.institution,
+                            year: new Date(primaryEducation.endDate || primaryEducation.startDate).getFullYear().toString(),
+                          }
+                        : {
+                            degree: "No education added",
+                            school: "",
+                            year: "",
+                          },
+                      certifications,
+                      completeness,
+                      strengthTips,
+                      activity,
+                      skills: profile.skills || [],
+                      experience: profile.experience || [],
+                    }}
+                    onUpdate={fetchProfile}
+                  />
+                ),
               },
               {
                 key: "documents",
                 label: <span className="px-4 py-1">Documents</span>,
                 children: (
                   <div className="mt-2">
-                    <DocumentsSection />
+                    <DocumentsSection profile={profile} onUpdate={fetchProfile} />
                   </div>
                 ),
               },
