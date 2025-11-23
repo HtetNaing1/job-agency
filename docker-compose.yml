@@ -13,6 +13,55 @@ services:
       - mongodb_data:/data/db
     networks:
       - job-agency-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: job-agency-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - DB_URI=mongodb://mongodb:27017/job-agency
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-12345
+      - REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production-67890
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - job-agency-network
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: job-agency-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    depends_on:
+      - backend
+    networks:
+      - job-agency-network
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - /app/.next
 
 networks:
   job-agency-network:
