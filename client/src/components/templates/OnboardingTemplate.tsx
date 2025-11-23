@@ -336,6 +336,9 @@ export default function OnboardingTemplate() {
         message.success("Profile setup complete!");
         messageApi.destroy(WARN_KEY);
 
+        // Clear the onboarding flag cookie
+        document.cookie = "needsOnboarding=; path=/; max-age=0";
+
         // Redirect based on role
         setTimeout(() => {
           if (userRole === "employer") {

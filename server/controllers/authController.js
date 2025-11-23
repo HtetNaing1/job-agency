@@ -17,6 +17,9 @@ export const register = async (req, res, next) => {
     res.cookie('accessToken', data.accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 }); // 15 minutes
     res.cookie('refreshToken', data.refreshToken, cookieOptions); // 7 days
 
+    // Set flag to redirect new users to onboarding
+    res.cookie('needsOnboarding', 'true', { ...cookieOptions, maxAge: 10 * 60 * 1000 }); // 10 minutes
+
     res.status(201).json({ err: 0, message: "OK", data });
   } catch (e) {
     res.status(400).json({ err: 1, message: e.message || "Signup failed" });
