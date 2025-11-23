@@ -72,7 +72,10 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
     if (error.status === 401 && !isPublicEndpoint) {
       if (error.status === 401 && error.message === "User is disabled.") {
         useErrorStore.getState().setDisabledError(true);
-        return new Promise<never>(() => {});
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+        window.location.href = "/login";
+        throw new Error("Your account has been disabled. Please contact support.");
       }
       console.log("", error);
       let tokens = null;
@@ -91,6 +94,13 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
           Cookies.set("accessToken", newAccessToken, { path: "/", sameSite: "lax" });
           Cookies.set("refreshToken", newRefreshToken, { path: "/", sameSite: "lax" });
           return await executeRequest(newAccessToken);
+        } else {
+          // Token refresh failed or is already in progress
+          isRefreshing = false;
+          Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
+          window.location.href = "/login";
+          throw new Error("Session expired. Please login again.");
         }
       } catch (refreshError) {
         isRefreshing = false;
