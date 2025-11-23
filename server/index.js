@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./utils/db.js";
@@ -28,6 +29,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 // middleware
+app.use(cookieParser());
 app.use(express.json());
 
 // Serve static files (uploaded files)

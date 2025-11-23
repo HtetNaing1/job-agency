@@ -42,6 +42,7 @@ export const fetchRequest = async <TResponse, TRequest = unknown>(
         ...(token && { Authorization: `Bearer ${token}` }),
         ...customConfig.headers,
       },
+      credentials: 'include', // Enable cross-origin cookies
       body: isFormData ? body : body ? JSON.stringify(body) : undefined,
       ...customConfig,
     };

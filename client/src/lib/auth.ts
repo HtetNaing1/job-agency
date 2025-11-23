@@ -21,10 +21,10 @@ export async function register(payload: {
   firstTimeLogin?: boolean;
 }> {
   const res = await fetch(`${API_URL}/auth/register`, {
-    // 👈 align with backend route
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...payload, source: "USER" }), // 👈 keep parity with login
+    credentials: 'include', // Enable cross-origin cookies
+    body: JSON.stringify({ ...payload, source: "USER" }),
   });
 
   // Try to read JSON even on error so we can show a useful message
@@ -70,6 +70,7 @@ export async function login(
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify(data),
   });
 
@@ -97,9 +98,10 @@ export async function refreshAccessToken(
   const res = await fetch(`${API_URL}/auth/refresh`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json", // ← recommended
+      "Content-Type": "application/json",
       "X-Refresh-Token": refreshToken,
     },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify({ refreshToken }),
   });
 
@@ -126,6 +128,7 @@ export async function logout(refreshToken: string): Promise<void> {
     headers: {
       "X-Refresh-Token": refreshToken,
     },
+    credentials: 'include', // Enable cross-origin cookies
   });
 
   // ✅ Clear cookies on client logout
@@ -137,6 +140,7 @@ export async function forgotPassword(email: string): Promise<void> {
   const res = await fetch(`${API_URL}/auth/forgot-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify({ email }),
   });
 
@@ -160,6 +164,7 @@ export async function resetPassword(
       "Content-Type": "application/json",
       "X-Temp-Token": token,
     },
+    credentials: 'include', // Enable cross-origin cookies
     body: JSON.stringify({ newPassword }),
   });
 

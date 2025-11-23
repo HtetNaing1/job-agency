@@ -71,10 +71,10 @@ export default function RegisterTemplate() {
       await register(payload);
       message.success("Account created successfully!");
 
-      // Always redirect to onboarding for new registrations
-      // Use hard navigation to ensure cookies are sent with the request
+      // Redirect to onboarding for new registrations
+      // Cookies are now set via HTTP headers, so we can use Next.js router
       setTimeout(() => {
-        window.location.href = "/onboarding";
+        router.push("/onboarding");
       }, 500);
     } catch (err: any) {
       message.error(err?.message || "Failed to create account");
